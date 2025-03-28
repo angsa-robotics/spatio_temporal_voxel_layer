@@ -180,8 +180,10 @@ void SpatioTemporalVoxelGrid::TemporalClearAndGenerateCostmap(
         _robot_base_frame, _global_frame,
         tf2::TimePointZero, tf2::durationFromSec(0.5));
       _tf.transform(global_pose, local_pose, _robot_base_frame);
-      
-      if (std::abs(local_pose.pose.position.x) > _voxel_distance_decay) {
+      auto distance_2d = 
+        std::sqrt(local_pose.pose.position.x * local_pose.pose.position.x +
+          local_pose.pose.position.y * local_pose.pose.position.y);
+      if (distance_2d > _voxel_distance_decay) {
         cleared_point = true;
         if (!this->ClearGridPoint(pt_index)) {
           std::cout << "Failed to clear point." << std::endl;
