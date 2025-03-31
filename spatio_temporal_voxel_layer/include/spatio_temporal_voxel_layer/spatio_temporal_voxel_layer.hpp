@@ -180,9 +180,10 @@ private:
   rclcpp::Service<spatio_temporal_voxel_layer::srv::SaveGrid>::SharedPtr _grid_saver;
   std::unique_ptr<rclcpp::Duration> _map_save_duration;
   rclcpp::Time _last_map_save_time;
-  std::string _global_frame;
+  std::string _global_frame, _robot_base_frame;
   double _voxel_size, _voxel_decay;
   int _combination_method, _mark_threshold;
+  double _voxel_distance_decay;
   volume_grid::GlobalDecayModel _decay_model;
   bool _update_footprint_enabled, _enabled;
   std::vector<geometry_msgs::msg::Point> _transformed_footprint;
