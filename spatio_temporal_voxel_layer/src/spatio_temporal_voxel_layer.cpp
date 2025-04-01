@@ -119,6 +119,12 @@ void SpatioTemporalVoxelLayer::onInitialize(void)
   // decay param
   declareParameter("voxel_decay", rclcpp::ParameterValue(-1.0));
   node->get_parameter(name_ + ".voxel_decay", _voxel_decay);
+  // distance decay param
+  declareParameter("voxel_distance_decay", rclcpp::ParameterValue(-1.0));
+  node->get_parameter(name_ + ".voxel_distance_decay", _voxel_distance_decay);
+  // robot base frame
+  declareParameter("robot_base_frame", rclcpp::ParameterValue(std::string("base_link")));
+  node->get_parameter(name_ + ".robot_base_frame", _robot_base_frame);
   // whether to map or navigate
   declareParameter("mapping_mode", rclcpp::ParameterValue(false));
   node->get_parameter(name_ + ".mapping_mode", _mapping_mode);
@@ -156,7 +162,7 @@ void SpatioTemporalVoxelLayer::onInitialize(void)
 
   _voxel_grid = std::make_unique<volume_grid::SpatioTemporalVoxelGrid>(
     node->get_clock(), _voxel_size, static_cast<double>(default_value_), _decay_model,
-    _voxel_decay, _publish_voxels);
+    _voxel_decay, _publish_voxels, _voxel_distance_decay);
 
   matchSize();
 
@@ -772,7 +778,9 @@ void SpatioTemporalVoxelLayer::updateBounds(
     should_save = node->now() - _last_map_save_time > *_map_save_duration;
   }
   if (!_mapping_mode) {
-    _voxel_grid->ClearFrustums(clearing_observations, cleared_cells);
+    openvdb::Vec3d robot_pose_world;
+    mapToWorldNoBounds(robot_x, robot_y, robot_pose_world[0], robot_pose_world[1]);
+    _voxel_grid->ClearFrustums(clearing_observations, cleared_cells, robot_pose_world);
   } else if (should_save) {
     _last_map_save_time = node->now();
     time_t rawtime;
