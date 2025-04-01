@@ -160,7 +160,6 @@ void SpatioTemporalVoxelGrid::TemporalClearAndGenerateCostmap(
   // check each point in the grid for inclusion in a frustum
   openvdb::DoubleGrid::ValueOnCIter cit_grid = _grid->cbeginValueOn();
   double voxel_distance_decay_squared = _voxel_distance_decay * _voxel_distance_decay;
-  bool one = false;
   for (; cit_grid.test(); ++cit_grid) {
     const openvdb::Coord pt_index(cit_grid.getCoord());
     const openvdb::Vec3d pose_world = this->IndexToWorld(pt_index);
@@ -175,12 +174,7 @@ void SpatioTemporalVoxelGrid::TemporalClearAndGenerateCostmap(
       double distance_2d_squared = 
         (pose_world[0] - robot_pose_world[0]) * (pose_world[0] - robot_pose_world[0]) +
         (pose_world[1] - robot_pose_world[1]) * (pose_world[1] - robot_pose_world[1]);
-      
-      if (!one) {
-        one = true;
-        auto distance_2d = std::sqrt(distance_2d_squared);
-        std::cout << "Distance to robot: " << distance_2d << std::endl;
-      }
+    
 
       if (distance_2d_squared > voxel_distance_decay_squared) {
         cleared_point = true;
