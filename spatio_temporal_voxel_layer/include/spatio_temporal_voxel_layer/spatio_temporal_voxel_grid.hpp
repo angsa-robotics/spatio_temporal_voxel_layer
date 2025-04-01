@@ -183,9 +183,8 @@ protected:
 
   mutable openvdb::DoubleGrid::Ptr _grid;
   int _decay_model;
-  double _background_value, _voxel_size, _voxel_decay;
+  double _background_value, _voxel_size, _voxel_decay, _voxel_distance_decay;
   bool _pub_voxels;
-  double _voxel_distance_decay;
   std::unique_ptr<std::vector<geometry_msgs::msg::Point32>> _grid_points;
   std::unordered_map<occupany_cell, uint> * _cost_map;
   boost::mutex _grid_lock;
