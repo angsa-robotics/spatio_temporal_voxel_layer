@@ -130,7 +130,7 @@ public:
     rclcpp::Clock::SharedPtr clock,
     const float & voxel_size, const double & background_value,
     const int & decay_model, const double & voxel_decay,
-    const bool & pub_voxels, const double & voxel_distance_decay);
+    const double & voxel_distance_decay, const bool & pub_voxels);
   ~SpatioTemporalVoxelGrid(void);
 
   // Core making and clearing functions

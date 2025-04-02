@@ -49,11 +49,11 @@ namespace volume_grid
 SpatioTemporalVoxelGrid::SpatioTemporalVoxelGrid(
   rclcpp::Clock::SharedPtr clock,
   const float & voxel_size, const double & background_value,
-  const int & decay_model, const double & voxel_decay, const bool & pub_voxels,
-  const double & voxel_distance_decay)
+  const int & decay_model, const double & voxel_decay, const double & voxel_distance_decay,
+  const bool & pub_voxels)
 : _clock(clock), _decay_model(decay_model), _background_value(background_value),
-  _voxel_size(voxel_size), _voxel_decay(voxel_decay), _pub_voxels(pub_voxels),
-  _voxel_distance_decay(voxel_distance_decay),
+  _voxel_size(voxel_size), _voxel_decay(voxel_decay), _voxel_distance_decay(voxel_distance_decay),
+  _pub_voxels(pub_voxels),
   _grid_points(std::make_unique<std::vector<geometry_msgs::msg::Point32>>()),
   _cost_map(new std::unordered_map<occupany_cell, uint>)
 /*****************************************************************************/
@@ -171,10 +171,9 @@ void SpatioTemporalVoxelGrid::TemporalClearAndGenerateCostmap(
     // spatial filtering
     if (_voxel_distance_decay > 0.0) {
       // check squared distance from robot to voxel
-      double distance_2d_squared = 
+      double distance_2d_squared =
         (pose_world[0] - robot_pose_world[0]) * (pose_world[0] - robot_pose_world[0]) +
         (pose_world[1] - robot_pose_world[1]) * (pose_world[1] - robot_pose_world[1]);
-    
 
       if (distance_2d_squared > voxel_distance_decay_squared) {
         cleared_point = true;
