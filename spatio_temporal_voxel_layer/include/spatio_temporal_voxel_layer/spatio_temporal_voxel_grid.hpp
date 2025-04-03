@@ -62,15 +62,10 @@
 #include "visualization_msgs/msg/marker.hpp"
 #include "geometry_msgs/msg/point.hpp"
 #include "geometry_msgs/msg/point32.hpp"
-#include "geometry_msgs/msg/pose_stamped.hpp"
 // OpenVDB
 #include "openvdb/openvdb.h"
 #include "openvdb/tools/GridTransformer.h"
 #include "openvdb/tools/RayIntersector.h"
-// tf2
-#include "tf2_ros/buffer.h"
-#include "tf2/time.h"
-#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
 // measurement struct and buffer
 #include "spatio_temporal_voxel_layer/measurement_buffer.hpp"
@@ -135,9 +130,7 @@ public:
     rclcpp::Clock::SharedPtr clock,
     const float & voxel_size, const double & background_value,
     const int & decay_model, const double & voxel_decay,
-    const bool & pub_voxels, const double & voxel_distance_decay, tf2_ros::Buffer & tf,
-    const std::string & global_frame,
-    const std::string & robot_base_frame);
+    const double & voxel_distance_decay, const bool & pub_voxels);
   ~SpatioTemporalVoxelGrid(void);
 
   // Core making and clearing functions
@@ -145,7 +138,8 @@ public:
   void operator()(const observation::MeasurementReading & obs) const;
   void ClearFrustums(
     const std::vector<observation::MeasurementReading> & clearing_observations,
-    std::unordered_set<occupany_cell> & cleared_cells);
+    std::unordered_set<occupany_cell> & cleared_cells,
+    openvdb::Vec3d & robot_pose_world);
 
   // Get the pointcloud of the underlying occupancy grid
   void GetOccupancyPointCloud(std::unique_ptr<sensor_msgs::msg::PointCloud2> & pc2);
@@ -153,9 +147,7 @@ public:
 
   // Clear the grid
   bool ResetGrid(void);
-  void ResetGridArea(
-    const occupany_cell & start, const occupany_cell & end,
-    bool invert_area = false);
+  void ResetGridArea(const occupany_cell & start, const occupany_cell & end, bool invert_area=false);
 
   // Save the file to file with size information
   bool SaveGrid(const std::string & file_name, double & map_size_bytes);
@@ -177,7 +169,8 @@ protected:
     const double & time_delta, const double & acceleration_factor);
   void TemporalClearAndGenerateCostmap(
     std::vector<frustum_model> & frustums,
-    std::unordered_set<occupany_cell> & cleared_cells);
+    std::unordered_set<occupany_cell> & cleared_cells,
+    openvdb::Vec3d & robot_pose_world);
 
   // Populate the costmap ROS api and pointcloud with a marked point
   void PopulateCostmapAndPointcloud(const openvdb::Coord & pt);
@@ -190,11 +183,8 @@ protected:
 
   mutable openvdb::DoubleGrid::Ptr _grid;
   int _decay_model;
-  double _background_value, _voxel_size, _voxel_decay;
+  double _background_value, _voxel_size, _voxel_decay, _voxel_distance_decay;
   bool _pub_voxels;
-  double _voxel_distance_decay;
-  tf2_ros::Buffer & _tf;
-  std::string _global_frame, _robot_base_frame;
   std::unique_ptr<std::vector<geometry_msgs::msg::Point32>> _grid_points;
   std::unordered_map<occupany_cell, uint> * _cost_map;
   boost::mutex _grid_lock;
