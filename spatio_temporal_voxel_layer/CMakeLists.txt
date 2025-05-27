@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 project(spatio_temporal_voxel_layer)
 
 if(NOT WIN32)
@@ -79,9 +79,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 )
 rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
 
-# Get a linker error when there are undefined symbols
-add_link_options(-Wl,--no-undefined)
-
 include_directories(
     include
     ${BOOST_INCLUDE_DIRS}
@@ -108,6 +105,9 @@ target_link_libraries(${library_name}
   ${PCL_LIBRARIES}
   OpenVDB::openvdb
 )
+
+# Get a linker error when there are undefined symbols
+target_link_options(${library_name} PRIVATE -Wl,--no-undefined)
 
 ament_target_dependencies(${library_name} ${dependencies})
 
