@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 project(spatio_temporal_voxel_layer)
 
 if(NOT WIN32)
@@ -22,6 +22,7 @@ find_package(message_filters REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(nav2_ros_common REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_sensor_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
@@ -79,15 +80,13 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 )
 rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
 
-# Get a linker error when there are undefined symbols
-add_link_options(-Wl,--no-undefined)
-
 include_directories(
     include
     ${BOOST_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
+    ${pcl_conversions_INCLUDE_DIRS}
 )
 
 add_library(${library_name} SHARED
@@ -107,9 +106,22 @@ target_link_libraries(${library_name}
   ${EIGEN3_LIBRARIES}
   ${PCL_LIBRARIES}
   OpenVDB::openvdb
+  rclcpp::rclcpp
+  ${geometry_msgs_TARGETS}
+  rclcpp_lifecycle::rclcpp_lifecycle
+  ${sensor_msgs_TARGETS}
+  ${visualization_msgs_TARGETS}
+  tf2_ros::tf2_ros
+  tf2_geometry_msgs::tf2_geometry_msgs
+  tf2_sensor_msgs::tf2_sensor_msgs
+  nav2_costmap_2d::nav2_costmap_2d_core
+  laser_geometry::laser_geometry
+  pcl_conversions::pcl_conversions
+  nav2_ros_common::nav2_ros_common
 )
 
-ament_target_dependencies(${library_name} ${dependencies})
+# Get a linker error when there are undefined symbols
+target_link_options(${library_name} PRIVATE -Wl,--no-undefined)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
