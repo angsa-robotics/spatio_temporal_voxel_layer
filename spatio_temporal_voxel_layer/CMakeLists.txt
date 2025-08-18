@@ -69,6 +69,7 @@ set(dependencies
   visualization_msgs
   builtin_interfaces
   openvdb_vendor
+  nav2_ros_common
 )
 
 set(library_name spatio_temporal_voxel_layer_core)
