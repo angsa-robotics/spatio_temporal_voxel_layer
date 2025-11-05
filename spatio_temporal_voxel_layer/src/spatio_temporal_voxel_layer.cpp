@@ -108,6 +108,9 @@ void SpatioTemporalVoxelLayer::onInitialize(void)
   // clear under robot footprint
   declareParameter("update_footprint_enabled", rclcpp::ParameterValue(true));
   node->get_parameter(name_ + ".update_footprint_enabled", _update_footprint_enabled);
+  // padding for footprint clearing
+  declareParameter("footprint_clearing_padding", rclcpp::ParameterValue(0.0));
+  node->get_parameter(name_ + ".footprint_clearing_padding", _footprint_clearing_padding);
   // keep tabs on unknown space
   declareParameter(
     "track_unknown_space",
@@ -539,9 +542,18 @@ bool SpatioTemporalVoxelLayer::updateFootprint(
   if (!_update_footprint_enabled) {
     return false;
   }
+
+  // Get the base footprint and apply padding before transformation
+  std::vector<geometry_msgs::msg::Point> padded_footprint = getFootprint();
+  if (_footprint_clearing_padding > 0.0) {
+    nav2_costmap_2d::padFootprint(padded_footprint, _footprint_clearing_padding);
+  }
+
+  // Transform the padded footprint to the robot's current pose
   nav2_costmap_2d::transformFootprint(
     robot_x, robot_y, robot_yaw,
-    getFootprint(), _transformed_footprint);
+    padded_footprint, _transformed_footprint);
+
   for (unsigned int i = 0; i < _transformed_footprint.size(); i++) {
     touch(
       _transformed_footprint[i].x, _transformed_footprint[i].y,
@@ -945,6 +957,12 @@ SpatioTemporalVoxelLayer::dynamicParametersCallback(std::vector<rclcpp::Paramete
     if (type == ParameterType::PARAMETER_INTEGER) {
       if (name == name_ + "." + "mark_threshold") {
         _mark_threshold = parameter.as_int();
+      }
+    }
+
+    if (type == ParameterType::PARAMETER_DOUBLE) {
+      if (name == name_ + "." + "footprint_clearing_padding") {
+        _footprint_clearing_padding = parameter.as_double();
       }
     }
   }
